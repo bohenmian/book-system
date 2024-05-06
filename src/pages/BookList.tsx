@@ -1,18 +1,19 @@
 import {Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {getBooks} from "../api/bookService";
-import BookDetail, {BookProps, Book} from "../components/Book";
+import {useNavigate} from "react-router-dom";
+
+export interface Book {
+    id: string;
+    title: string;
+    author: string;
+    publicationYear: number;
+    isbn: string;
+}
 
 export const BookListing: React.FC = () => {
-
-    const [books, setBooks] = useState<Book[]>([{
-        // TODO mock data
-        id: '1',
-        isbn: 'isbn text',
-        title: 'title text',
-        publicationYear: 2023,
-        author: 'au..'
-    }]);
+    const navigate = useNavigate()
+    const [books, setBooks] = useState<Book[]>([]);
 
     useEffect(() => {
         fetchBooks();
@@ -21,11 +22,15 @@ export const BookListing: React.FC = () => {
     const fetchBooks = async () => {
         try {
             const response = await getBooks();
-            setBooks(response.data);
+            setBooks(response);
         } catch (error) {
             console.error('Error fetching books:', error);
         }
     };
+
+    const gotoDetailPage = (id: string) => {
+        navigate(`/books/${id}/book`)
+    }
 
     return (
         <div>
@@ -34,24 +39,19 @@ export const BookListing: React.FC = () => {
                 <Table sx={{minWidth: 650}} aria-label="simple table">
                     <TableHead>
                         <TableRow>
-                            <TableCell>Dessert (100g serving)</TableCell>
-                            <TableCell align="right">Calories</TableCell>
-                            <TableCell align="right">Fat&nbsp;(g)</TableCell>
-                            <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-                            <TableCell align="right">Protein&nbsp;(g)</TableCell>
+                            <TableCell>Title</TableCell>
+                            <TableCell align="right">Author</TableCell>
+                            <TableCell align="right">Publication Year</TableCell>
+                            <TableCell align="right">ISBN</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {books.map((row) => (
-                            <TableRow
-                                key={row.id}
-                            >
-                                <TableCell component="th" scope="row">
-                                    {row.title}
-                                </TableCell>
-                                <TableCell align="right">{row.author}</TableCell>
-                                <TableCell align="right">{row.isbn}</TableCell>
-                                <TableCell align="right">{row.publicationYear}</TableCell>
+                        {books.map((book: Book) => (
+                            <TableRow key={book.id} onClick={() => gotoDetailPage(book.id)}>
+                                <TableCell component="th" scope="row">{book.title}</TableCell>
+                                <TableCell align="right">{book.author}</TableCell>
+                                <TableCell align="right">{book.publicationYear}</TableCell>
+                                <TableCell align="right">{book.isbn}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
