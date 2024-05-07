@@ -22,7 +22,6 @@ export const createBook = async (data: Omit<Book, 'id'>) => {
 export const getBooks = async () => {
     try {
         const response = await axios.get(`${BASE_URL}/books`);
-        console.log(response)
         return response.data;
     } catch (error) {
         throw new Error('Error fetching books');
@@ -38,6 +37,16 @@ export const getBookById = async (id: string) => {
         throw new Error('Error fetching book detail error');
     }
 }
+
+export const updateBook = async (id: string, data: Book) => {
+    try {
+        const response = await axios.put(`${BASE_URL}/books/${id}/book`, data);
+        return response.data as Book;
+    } catch (error) {
+        throw new Error('Error updating book');
+    }
+};
+
 export const deleteBook = async (id: string) => {
     try {
         const response = await axios.delete(`${BASE_URL}/books/${id}/book`);

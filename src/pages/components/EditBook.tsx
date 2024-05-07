@@ -1,64 +1,55 @@
-import {Box, TextField} from '@mui/material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import dayjs, { Dayjs } from 'dayjs';
-import { Fragment, useState } from 'react';
-import { createBook } from '../../api/bookService';
+import {Fragment, useState} from 'react';
+import {Book, updateBook} from '../../api/bookService';
+import {Box, TextField} from '@mui/material';
+import dayjs, {Dayjs} from 'dayjs';
+import {DatePicker} from '@mui/x-date-pickers';
 
-export default function CreateBook(props: {onAdded: () => void;}) {
-    const [open, setOpen] = useState(false);
-    const [title, setTitle] = useState('');
-    const [author, setAuthor] = useState('');
-    const [year, setYear] = useState<Dayjs | null>(dayjs());
-    const [isbn, setIsbn] = useState('');
+export default function EditBook(props: { book: Book; onEdited: (isConfirmed: boolean) => void; }) {
+    const {book, onEdited} = props;
+    const [title, setTitle] = useState(book.title);
+    const [author, setAuthor] = useState(book.author);
+    const [year, setYear] = useState<Dayjs | null>(() => {
+        const date = dayjs();
+        date.set('year', book.publicationYear);
+        return date;
+    });
+    const [isbn, setIsbn] = useState(book.isbn);
 
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-
-    const handleClose = () => {
-        setOpen(false);
-    };
     const handleConfirm = async () => {
         if (title && author && year && isbn) {
-            await createBook({
+            await updateBook(book.id, {
+                id: book.id,
                 title,
                 author,
                 publicationYear: year.year(),
                 isbn,
             });
-            setOpen(false);
-            setTitle('');
-            setAuthor('');
-            setYear(dayjs());
-            setIsbn('');
-            props.onAdded();
+            onEdited(true);
         }
     };
 
     return (
         <Fragment>
-            <Button variant="contained" color={"primary"} onClick={handleClickOpen}>
-                Create New Book
-            </Button>
             <Dialog
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="Create New Book"
+                open
+                onClose={() => onEdited(false)}
+                aria-labelledby="Edit Book"
                 fullWidth
             >
-                <DialogTitle>Create New Book</DialogTitle>
+                <DialogTitle>Edit Book</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                        Please fill in the details of the new book.
+                        Please fill in the details of the book.
                     </DialogContentText>
                     <Box sx={{py: 2}}>
                         <TextField
+                            error={title === ''}
                             label="Title"
                             variant="outlined"
                             value={title}
@@ -66,9 +57,9 @@ export default function CreateBook(props: {onAdded: () => void;}) {
                             fullWidth
                         />
                     </Box>
-
                     <Box sx={{py: 2}}>
                         <TextField
+                            error={author === ''}
                             label="Author"
                             variant="outlined"
                             value={author}
@@ -87,6 +78,7 @@ export default function CreateBook(props: {onAdded: () => void;}) {
                     </Box>
                     <Box sx={{py: 2}}>
                         <TextField
+                            error={isbn === ''}
                             label="ISBN"
                             variant="outlined"
                             value={isbn}
@@ -96,8 +88,8 @@ export default function CreateBook(props: {onAdded: () => void;}) {
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleConfirm} autoFocus>
+                    <Button variant="contained" onClick={() => onEdited(false)}>Cancel</Button>
+                    <Button variant="contained" onClick={handleConfirm} autoFocus>
                         Confirm
                     </Button>
                 </DialogActions>
